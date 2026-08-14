@@ -1,0 +1,60 @@
+=== KICKSTARTER DATASET SCHEMA & HEALTH REPORT ===
+
+Total Rows: 191,384
+Total Columns: 42
+
+--- COLUMN DATA TYPES AND NULL VALUES ---
+                                          DataType  NonNullCount  NullCount NullPercentage
+backers_count                                int64        191384          0           0.0%
+blurb                                       object        191320         64          0.03%
+category                                    object        191384          0           0.0%
+converted_pledged_amount                   float64        181464       9920          5.18%
+country                                     object        191384          0           0.0%
+country_displayable_name                    object        191384          0           0.0%
+created_at                          datetime64[ns]        191384          0           0.0%
+creator                                     object        191384          0           0.0%
+currency                                    object        191384          0           0.0%
+currency_symbol                             object        191384          0           0.0%
+currency_trailing_code                        bool        191384          0           0.0%
+current_currency                            object        191384          0           0.0%
+deadline                            datetime64[ns]        191384          0           0.0%
+disable_communication                         bool        191384          0           0.0%
+fx_rate                                    float64        191384          0           0.0%
+goal                                       float64        191384          0           0.0%
+id                                           int64        191384          0           0.0%
+is_disliked                                float64             0     191384         100.0%
+is_in_post_campaign_pledging_phase            bool        191384          0           0.0%
+is_launched                                   bool        191384          0           0.0%
+is_liked                                   float64             0     191384         100.0%
+is_starrable                                  bool        191384          0           0.0%
+launched_at                         datetime64[ns]        191384          0           0.0%
+location                                    object        191087        297          0.16%
+name                                        object        191384          0           0.0%
+percent_funded                             float64        191384          0           0.0%
+photo                                       object        191384          0           0.0%
+pledged                                    float64        191384          0           0.0%
+prelaunch_activated                           bool        191384          0           0.0%
+profile                                     object        191384          0           0.0%
+slug                                        object        191384          0           0.0%
+source_url                                  object        191384          0           0.0%
+spotlight                                     bool        191384          0           0.0%
+staff_pick                                    bool        191384          0           0.0%
+state                                       object        191384          0           0.0%
+state_changed_at                    datetime64[ns]        191384          0           0.0%
+static_usd_rate                            float64        191384          0           0.0%
+urls                                        object        191384          0           0.0%
+usd_exchange_rate                          float64        181464       9920          5.18%
+usd_pledged                                float64        181464       9920          5.18%
+usd_type                                    object        191384          0           0.0%
+video                                       object        120162      71222         37.21%
+
+--- NUMERICAL SUMMARY STATISTICS ---
+       backers_count  converted_pledged_amount                     created_at                       deadline        fx_rate          goal            id  is_disliked  is_liked                    launched_at  percent_funded       pledged               state_changed_at  static_usd_rate  usd_exchange_rate   usd_pledged
+count  191384.000000              1.814640e+05                         191384                         191384  191384.000000  1.913840e+05  1.913840e+05          0.0       0.0                         191384    1.913840e+05  1.913840e+05                         191384    191384.000000      181464.000000  1.814640e+05
+mean      132.357188              1.800223e+04  2020-06-04 18:18:46.973252608  2018-01-04 04:02:46.003155968       0.982430  6.187221e+04  1.074398e+09          NaN       NaN  2017-09-26 20:03:38.797140736    1.882438e+03  5.088602e+04  2020-08-31 10:34:14.056728320         0.932046           0.982695  1.800179e+04
+min         0.000000              0.000000e+00            2009-04-23 03:06:59            1970-01-01 00:00:00       0.006272  0.000000e+00  1.358300e+04          NaN       NaN            1970-01-01 00:00:00    0.000000e+00  0.000000e+00            2009-05-16 10:00:25         0.000000           0.006103  0.000000e+00
+25%         3.000000              1.810000e+02  2016-04-18 17:21:35.249999872  2015-11-14 03:31:54.750000128       1.000000  1.000000e+03  5.394425e+08          NaN       NaN     2015-09-26 20:31:48.500000    1.742857e+00  1.010000e+02  2016-07-03 20:12:21.249999872         1.000000           1.000000  1.810000e+02
+50%        25.000000              1.888000e+03            2020-10-14 14:01:17     2020-01-04 11:23:30.500000       1.000000  5.000000e+03  1.074748e+09          NaN       NaN     2019-11-05 12:28:23.500000    1.020462e+02  1.667000e+03            2021-01-21 16:58:39         1.000000           1.000000  1.889000e+03
+75%        87.000000              7.757000e+03            2024-09-05 11:51:20     2024-08-30 17:18:23.500000       1.000000  1.400000e+04  1.609833e+09          NaN       NaN  2024-07-19 13:18:26.249999872    1.432800e+02  8.012000e+03     2024-12-08 05:21:13.500000         1.000000           1.000000  7.759164e+03
+max    105857.000000              4.676226e+07            2026-08-12 07:22:07            2026-10-11 06:31:35       1.350530  1.000000e+09  2.147476e+09          NaN       NaN            2026-08-12 10:03:37    2.149404e+08  1.936230e+08            2026-08-12 10:03:39         1.716408           1.716408  4.676226e+07
+std       778.237684              2.097114e+05                            NaN                            NaN       0.269106  3.439623e+06  6.193420e+08          NaN       NaN                            NaN    4.944065e+05  1.081272e+06                            NaN         0.340995           0.269003  2.096749e+05

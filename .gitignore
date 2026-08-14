@@ -1,0 +1,18 @@
+# Large raw datasets
+*.parquet
+*.csv
+
+# Allow small reproducible sample
+!sample_100.csv
+
+# Python environment & cache
+__pycache__/
+*.py[cod]
+venv/
+env/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Operating system files
+.DS_Store
+Thumbs.db

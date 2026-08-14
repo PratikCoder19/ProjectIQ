@@ -1,0 +1,281 @@
+{
+  "dataset_name": "Consolidated Kickstarter Dataset",
+  "total_records": 191384,
+  "columns": {
+    "backers_count": {
+      "dtype": "int64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "blurb": {
+      "dtype": "object",
+      "missing_pct": 0.03,
+      "unique_values_sample": "High Cardinality"
+    },
+    "category": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "converted_pledged_amount": {
+      "dtype": "float64",
+      "missing_pct": 5.18,
+      "unique_values_sample": "High Cardinality"
+    },
+    "country": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "US",
+        "CA",
+        "NL",
+        "GB",
+        "SI"
+      ]
+    },
+    "country_displayable_name": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "the United States",
+        "Canada",
+        "the Netherlands",
+        "the United Kingdom",
+        "Slovenia"
+      ]
+    },
+    "created_at": {
+      "dtype": "datetime64[ns]",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "creator": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "currency": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "USD",
+        "CAD",
+        "EUR",
+        "GBP",
+        "NZD"
+      ]
+    },
+    "currency_symbol": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "$",
+        "\u20ac",
+        "\u00a3",
+        "\u00a5",
+        "z\u0142"
+      ]
+    },
+    "currency_trailing_code": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        true,
+        false
+      ]
+    },
+    "current_currency": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "USD"
+      ]
+    },
+    "deadline": {
+      "dtype": "datetime64[ns]",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "disable_communication": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        false,
+        true
+      ]
+    },
+    "fx_rate": {
+      "dtype": "float64",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        1.0,
+        0.71794828,
+        1.15353958,
+        1.35053008,
+        0.58672913
+      ]
+    },
+    "goal": {
+      "dtype": "float64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "id": {
+      "dtype": "int64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "is_disliked": {
+      "dtype": "float64",
+      "missing_pct": 100.0,
+      "unique_values_sample": []
+    },
+    "is_in_post_campaign_pledging_phase": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        false,
+        true
+      ]
+    },
+    "is_launched": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        false,
+        true
+      ]
+    },
+    "is_liked": {
+      "dtype": "float64",
+      "missing_pct": 100.0,
+      "unique_values_sample": []
+    },
+    "is_starrable": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        true,
+        false
+      ]
+    },
+    "launched_at": {
+      "dtype": "datetime64[ns]",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "location": {
+      "dtype": "object",
+      "missing_pct": 0.16,
+      "unique_values_sample": "High Cardinality"
+    },
+    "name": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "percent_funded": {
+      "dtype": "float64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "photo": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "pledged": {
+      "dtype": "float64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "prelaunch_activated": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        true,
+        false
+      ]
+    },
+    "profile": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "slug": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "source_url": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "spotlight": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        false,
+        true
+      ]
+    },
+    "staff_pick": {
+      "dtype": "bool",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        false,
+        true
+      ]
+    },
+    "state": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "submitted",
+        "started",
+        "suspended",
+        "successful",
+        "failed"
+      ]
+    },
+    "state_changed_at": {
+      "dtype": "datetime64[ns]",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "static_usd_rate": {
+      "dtype": "float64",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "urls": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": "High Cardinality"
+    },
+    "usd_exchange_rate": {
+      "dtype": "float64",
+      "missing_pct": 5.18,
+      "unique_values_sample": "High Cardinality"
+    },
+    "usd_pledged": {
+      "dtype": "float64",
+      "missing_pct": 5.18,
+      "unique_values_sample": "High Cardinality"
+    },
+    "usd_type": {
+      "dtype": "object",
+      "missing_pct": 0.0,
+      "unique_values_sample": [
+        "domestic",
+        "international"
+      ]
+    },
+    "video": {
+      "dtype": "object",
+      "missing_pct": 37.21,
+      "unique_values_sample": "High Cardinality"
+    }
+  }
+}
