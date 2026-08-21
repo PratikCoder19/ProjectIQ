@@ -1,6 +1,6 @@
 """
 ProjectIQ V2.0 — Instance-Level SHAP Explainability Engine
-Generates local feature attributions and dynamic waterfall plots.
+Generates local feature attributions, waterfall plots, and risk-vs-success attribution pie charts.
 """
 
 import matplotlib.pyplot as plt
@@ -45,6 +45,15 @@ class ProjectIQExplainer:
         sorted_indices = np.argsort(np.abs(values))[::-1]
         
         top_drivers = []
+        pos_impact_sum = 0.0
+        neg_impact_sum = 0.0
+
+        for val in values:
+            if val > 0:
+                pos_impact_sum += float(val)
+            else:
+                neg_impact_sum += abs(float(val))
+
         for idx in sorted_indices[:8]:
             fname = self.transformed_feature_names[idx]
             val = float(values[idx])
@@ -59,6 +68,8 @@ class ProjectIQExplainer:
         return {
             "shap_explanation": row_shap,
             "top_drivers": top_drivers,
+            "pos_impact_sum": pos_impact_sum,
+            "neg_impact_sum": neg_impact_sum,
             "base_value": float(self.explainer.expected_value)
         }
 
@@ -66,9 +77,44 @@ class ProjectIQExplainer:
         """
         Renders and saves an instance-level SHAP waterfall figure.
         """
-        fig, ax = plt.subplots(figsize=(9, 6))
+        fig, ax = plt.subplots(figsize=(9, 5.5))
         shap.plots.waterfall(row_shap, max_display=10, show=False)
         plt.title("ProjectIQ: Local Risk/Success Factor Attribution (SHAP)", fontsize=12, pad=12)
+        plt.tight_layout()
+        plt.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close()
+        return output_path
+
+    def generate_pie_chart(self, pos_sum: float, neg_sum: float, output_path: str = "instance_shap_pie.png"):
+        """
+        Renders a donut/pie chart displaying the net balance of risk-increasing vs success-supporting forces.
+        """
+        fig, ax = plt.subplots(figsize=(5, 5))
+        
+        # Handle zero or negligible values gracefully
+        if pos_sum + neg_sum == 0:
+            sizes = [50, 50]
+        else:
+            sizes = [neg_sum, pos_sum]
+
+        labels = ['Risk-Increasing Forces', 'Success-Supporting Forces']
+        colors = ['#EF4444', '#10B981'] # Red & Green
+
+        wedges, texts, autotexts = ax.pie(
+            sizes,
+            labels=labels,
+            autopct='%1.1f%%',
+            startangle=140,
+            colors=colors,
+            textprops=dict(color="#1E293B", fontsize=10, weight="bold"),
+            wedgeprops=dict(width=0.45, edgecolor='w', linewidth=2)
+        )
+        
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_fontsize(11)
+
+        plt.title("Net Factor Attribution Balance", fontsize=12, weight="bold", pad=12)
         plt.tight_layout()
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
         plt.close()

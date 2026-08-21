@@ -1,6 +1,7 @@
 """
 ProjectIQ V2.0 — AI-Driven Project Success & Risk Decision Support System
-Integrated Decision Intelligence Dashboard with Active AI Model Reporting
+Integrated Decision Intelligence Dashboard
+Prediction Point: T₀ (Pre-Launch Lock)
 """
 
 import os
@@ -45,7 +46,6 @@ except Exception as e:
 with st.sidebar:
     st.header("🤖 AI Copilot Model Status")
     
-    # Provider Selection Option
     model_provider_choice = st.selectbox(
         "Select Active AI Engine",
         ["Auto-Detect", "Google Gemini", "OpenAI", "Groq Cloud", "Local Ollama", "Deterministic (No LLM)"]
@@ -82,8 +82,23 @@ with st.sidebar:
         "Music", "Publishing", "Art", "Fashion", "Food", "Crafts", "Other"
     ]
     category = st.selectbox("Category Domain", category_options, index=0)
-    country_options = ["US", "GB", "CA", "AU", "DE", "FR", "IT", "NL", "ES", "SE", "Other"]
-    country = st.selectbox("Target Country", country_options, index=0)
+    
+    # Full country names mapping to model code
+    country_display_map = {
+        "United States": "US",
+        "United Kingdom": "GB",
+        "Canada": "CA",
+        "Australia": "AU",
+        "Germany": "DE",
+        "France": "FR",
+        "Italy": "IT",
+        "Netherlands": "NL",
+        "Spain": "ES",
+        "Sweden": "SE",
+        "Other / International": "Other"
+    }
+    selected_country_name = st.selectbox("Target Country", list(country_display_map.keys()), index=0)
+    country_code = country_display_map[selected_country_name]
     
     st.subheader("3. Schedule & Timing")
     campaign_duration = st.slider("Campaign Duration (Days)", min_value=7, max_value=90, value=45)
@@ -97,11 +112,23 @@ with st.sidebar:
     launch_hour = st.slider("Launch Hour (UTC)", 0, 23, 14)
     
     st.subheader("4. Assets & Readiness Signals")
-    has_video = st.checkbox("Pitch Video Included", value=False)
-    prelaunch_activated = st.checkbox("Pre-Launch Page Active", value=False)
-    staff_pick = st.checkbox("Platform Staff Pick", value=False)
+    # Tooltips provided on hover
+    has_video = st.checkbox(
+        "Pitch Video Included",
+        value=False,
+        help="Projects featuring a video pitch provide higher social proof and historically experience significantly stronger conversion and trust."
+    )
+    prelaunch_activated = st.checkbox(
+        "Pre-Launch Page Active",
+        value=False,
+        help="An active pre-launch landing page captures an early waitlist, driving essential Day-1 funding momentum and algorithmic visibility."
+    )
+    staff_pick = st.checkbox(
+        "Platform Staff Pick",
+        value=False,
+        help="Indicates editorial platform curation or featured placement, substantially increasing organic discovery across backer communities."
+    )
 
-# Main Title & Dynamic Model Badge
 st.title("🚀 ProjectIQ V2.0: AI Decision Intelligence System")
 st.markdown(
     f"**Active Prediction Engine:** `XGBoost ML Pipeline (AUC: 0.8646)` | **Active AI Advisory:** `{status_info['active_model']}`"
@@ -119,7 +146,7 @@ baseline_input = {
     "staff_pick": int(staff_pick),
     "prelaunch_activated": int(prelaunch_activated),
     "category_clean": category,
-    "country_clean": country,
+    "country_clean": country_code,
     "launch_month": launch_month,
     "launch_day_of_week": launch_day
 }
@@ -139,7 +166,9 @@ tab_assess, tab_shap, tab_sim, tab_bench, tab_reg, tab_copilot, tab_report = st.
     "📄 7. Decision Report"
 ])
 
+# ------------------------------------------
 # TAB 1: PROJECT ASSESSMENT
+# ------------------------------------------
 with tab_assess:
     st.subheader("Project Outcome Probability & Calibrated Risk Tier")
     col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
@@ -159,23 +188,41 @@ with tab_assess:
     st.progress(float(pred_result["success_probability"]))
     st.info("💡 **Academic Note:** Probabilities are calibrated on unseen holdout data ($N=34,049$, Brier Score: $0.1411$). Predictions represent statistical associations at $T_0$ and do not imply causal certainty.")
 
+# ------------------------------------------
 # TAB 2: SHAP EXPLAINABILITY
+# ------------------------------------------
 with tab_shap:
     st.subheader("Instance-Level Factor Attribution (Local TreeSHAP)")
-    waterfall_path = "instance_shap_waterfall.png"
-    explainer.generate_waterfall_plot(shap_result["shap_explanation"], waterfall_path)
     
-    col_plot, col_list = st.columns([1.4, 1])
-    with col_plot:
+    waterfall_path = "instance_shap_waterfall.png"
+    pie_path = "instance_shap_pie.png"
+    
+    explainer.generate_waterfall_plot(shap_result["shap_explanation"], waterfall_path)
+    explainer.generate_pie_chart(shap_result["pos_impact_sum"], shap_result["neg_impact_sum"], pie_path)
+    
+    col_waterfall, col_pie = st.columns([1.3, 1])
+    with col_waterfall:
         if os.path.exists(waterfall_path):
-            st.image(waterfall_path, caption="SHAP Waterfall: How project features shift the base log-odds to the final prediction.")
-    with col_list:
-        st.markdown("##### Top Attribution Drivers")
+            st.image(waterfall_path, caption="SHAP Waterfall: How specific project features shift base log-odds to the prediction.")
+    with col_pie:
+        if os.path.exists(pie_path):
+            st.image(pie_path, caption="Factor Balance: Total volume of Risk-Increasing vs Success-Supporting factors.")
+            
+    st.markdown("##### Detailed Attribution Breakdown")
+    col_drivers, col_expl = st.columns([1.2, 1])
+    with col_drivers:
         for d in shap_result["top_drivers"][:6]:
             icon = "✅" if d["shap_value"] > 0 else "⚠️"
             st.write(f"{icon} **{d['feature']}**: `{d['shap_value']:+.3f}` ({d['direction']})")
+    with col_expl:
+        st.caption(
+            "• **Red/Negative Factors:** Increase the likelihood of funding failure relative to platform average.\n"
+            "• **Green/Positive Factors:** Exert upward force driving project toward successful funding."
+        )
 
+# ------------------------------------------
 # TAB 3: WHAT-IF SIMULATOR
+# ------------------------------------------
 with tab_sim:
     st.subheader("⚡ Model-Based What-If Scenario Simulator")
     st.caption("Simulate how altering controllable decisions shifts model probability. (Non-causal sensitivity analysis)")
@@ -212,7 +259,9 @@ with tab_sim:
     with col_r3:
         st.metric("Projected Probability Shift", f"{sim_res['probability_delta_pct']:+.1f}%", delta=f"{sim_res['probability_delta_pct']:+.1f}%")
 
+# ------------------------------------------
 # TAB 4: BENCHMARKING
+# ------------------------------------------
 with tab_bench:
     st.subheader(f"📊 Domain Benchmarks: {category}")
     b1, b2, b3, b4 = st.columns(4)
@@ -226,7 +275,9 @@ with tab_bench:
         st.metric("Video Adoption Rate", f"{benchmark_info['domain_video_adoption']:.0f}%")
     st.write(f"**Goal Calibration Assessment:** `{benchmark_info['goal_assessment']}` ({benchmark_info['goal_ratio_to_median']}x Category Median)")
 
+# ------------------------------------------
 # TAB 5: RISK REGISTER
+# ------------------------------------------
 with tab_reg:
     st.subheader("🛡️ Project Risk Register & Action Plan")
     st.caption("Distinguishing empirical ML/SHAP data evidence from prescriptive management responses.")
@@ -240,7 +291,9 @@ with tab_reg:
     else:
         st.success("No critical risk factors identified under current project parameters.")
 
+# ------------------------------------------
 # TAB 6: AI COPILOT BRIEF
+# ------------------------------------------
 with tab_copilot:
     st.subheader("🤖 ProjectIQ AI Copilot: Executive Risk Advisory")
     context_payload = {
@@ -259,7 +312,9 @@ with tab_copilot:
     st.info(f"Generated by: **{copilot_output['source']}**")
     st.markdown(copilot_output["content"])
 
+# ------------------------------------------
 # TAB 7: DECISION REPORT
+# ------------------------------------------
 with tab_report:
     st.subheader("📄 Export Executive Decision Brief")
     if st.button("Generate Official Decision Brief (PDF)", type="primary"):
