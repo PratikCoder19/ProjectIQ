@@ -1,7 +1,6 @@
 """
 ProjectIQ V2.0 — AI-Driven Project Success & Risk Decision Support System
-Integrated Decision Intelligence Dashboard
-Prediction Point: T₀ (Pre-Launch Lock)
+Integrated Decision Intelligence Dashboard with Active AI Model Reporting
 """
 
 import os
@@ -18,7 +17,6 @@ from src.recommendations import RiskRegisterEngine
 from src.llm import AICopilot
 from src.reporting import DecisionReportGenerator
 
-# Page configuration
 st.set_page_config(
     page_title="ProjectIQ V2.0 | Decision Support System",
     page_icon="📊",
@@ -26,7 +24,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load Engines with caching
 @st.cache_resource
 def initialize_engines():
     pred = ProjectIQPredictor()
@@ -42,15 +39,33 @@ except Exception as e:
     st.error(f"Error initializing ProjectIQ V2.0 engines: {e}")
     st.stop()
 
-# Header & Academic Context
-st.title("🚀 ProjectIQ V2.0: AI Decision Intelligence System")
-st.caption("PGDM Data Science Dissertation | Prediction Point: T₀ (Pre-Launch Boundary — Zero Target Leakage)")
-st.markdown("---")
-
 # ==========================================
-# SIDEBAR: PROJECT ATTRIBUTES (INPUT PANEL)
+# SIDEBAR: AI ENGINE & PROJECT INPUTS
 # ==========================================
 with st.sidebar:
+    st.header("🤖 AI Copilot Model Status")
+    
+    # Provider Selection Option
+    model_provider_choice = st.selectbox(
+        "Select Active AI Engine",
+        ["Auto-Detect", "Google Gemini", "OpenAI", "Groq Cloud", "Local Ollama", "Deterministic (No LLM)"]
+    )
+    
+    provider_map = {
+        "Auto-Detect": "auto",
+        "Google Gemini": "gemini",
+        "OpenAI": "openai",
+        "Groq Cloud": "groq",
+        "Local Ollama": "ollama",
+        "Deterministic (No LLM)": "deterministic"
+    }
+    ai_copilot.set_provider(provider_map[model_provider_choice])
+    
+    status_info = ai_copilot.get_active_provider_status()
+    st.success(f"**Connected Model:**\n\n`{status_info['active_model']}`")
+    st.caption(f"Engine Type: **{status_info['engine_type']}**")
+    
+    st.markdown("---")
     st.header("📋 Project Configuration (T₀)")
     
     st.subheader("1. General & Financial")
@@ -86,7 +101,13 @@ with st.sidebar:
     prelaunch_activated = st.checkbox("Pre-Launch Page Active", value=False)
     staff_pick = st.checkbox("Platform Staff Pick", value=False)
 
-# Build baseline input dictionary
+# Main Title & Dynamic Model Badge
+st.title("🚀 ProjectIQ V2.0: AI Decision Intelligence System")
+st.markdown(
+    f"**Active Prediction Engine:** `XGBoost ML Pipeline (AUC: 0.8646)` | **Active AI Advisory:** `{status_info['active_model']}`"
+)
+st.markdown("---")
+
 baseline_input = {
     "name": proj_name,
     "blurb": proj_blurb,
@@ -103,15 +124,11 @@ baseline_input = {
     "launch_day_of_week": launch_day
 }
 
-# Run core inference & SHAP
 pred_result = predictor.predict(baseline_input)
 shap_result = explainer.explain_instance(pred_result["input_df"])
 benchmark_info = benchmarker.get_benchmark(category, goal_usd, campaign_duration)
 risk_register = RiskRegisterEngine.generate_risk_register(baseline_input, shap_result["top_drivers"], benchmark_info)
 
-# ==========================================
-# MAIN DASHBOARD TABS
-# ==========================================
 tab_assess, tab_shap, tab_sim, tab_bench, tab_reg, tab_copilot, tab_report = st.tabs([
     "🎯 1. Project Assessment",
     "🔍 2. SHAP Explainability",
@@ -122,12 +139,9 @@ tab_assess, tab_shap, tab_sim, tab_bench, tab_reg, tab_copilot, tab_report = st.
     "📄 7. Decision Report"
 ])
 
-# ------------------------------------------
 # TAB 1: PROJECT ASSESSMENT
-# ------------------------------------------
 with tab_assess:
     st.subheader("Project Outcome Probability & Calibrated Risk Tier")
-    
     col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
     with col_kpi1:
         st.metric(
@@ -145,9 +159,7 @@ with tab_assess:
     st.progress(float(pred_result["success_probability"]))
     st.info("💡 **Academic Note:** Probabilities are calibrated on unseen holdout data ($N=34,049$, Brier Score: $0.1411$). Predictions represent statistical associations at $T_0$ and do not imply causal certainty.")
 
-# ------------------------------------------
 # TAB 2: SHAP EXPLAINABILITY
-# ------------------------------------------
 with tab_shap:
     st.subheader("Instance-Level Factor Attribution (Local TreeSHAP)")
     waterfall_path = "instance_shap_waterfall.png"
@@ -163,9 +175,7 @@ with tab_shap:
             icon = "✅" if d["shap_value"] > 0 else "⚠️"
             st.write(f"{icon} **{d['feature']}**: `{d['shap_value']:+.3f}` ({d['direction']})")
 
-# ------------------------------------------
 # TAB 3: WHAT-IF SIMULATOR
-# ------------------------------------------
 with tab_sim:
     st.subheader("⚡ Model-Based What-If Scenario Simulator")
     st.caption("Simulate how altering controllable decisions shifts model probability. (Non-causal sensitivity analysis)")
@@ -200,18 +210,11 @@ with tab_sim:
     with col_r2:
         st.metric("Scenario Success Prob", f"{sim_res['scenario_probability'] * 100:.1f}%")
     with col_r3:
-        st.metric(
-            "Projected Probability Shift",
-            f"{sim_res['probability_delta_pct']:+.1f}%",
-            delta=f"{sim_res['probability_delta_pct']:+.1f}%"
-        )
+        st.metric("Projected Probability Shift", f"{sim_res['probability_delta_pct']:+.1f}%", delta=f"{sim_res['probability_delta_pct']:+.1f}%")
 
-# ------------------------------------------
 # TAB 4: BENCHMARKING
-# ------------------------------------------
 with tab_bench:
     st.subheader(f"📊 Domain Benchmarks: {category}")
-    
     b1, b2, b3, b4 = st.columns(4)
     with b1:
         st.metric("Category Success Rate", f"{benchmark_info['domain_success_rate']:.1f}%")
@@ -221,16 +224,12 @@ with tab_bench:
         st.metric("Domain Median Duration", f"{benchmark_info['domain_median_duration']} Days")
     with b4:
         st.metric("Video Adoption Rate", f"{benchmark_info['domain_video_adoption']:.0f}%")
-        
     st.write(f"**Goal Calibration Assessment:** `{benchmark_info['goal_assessment']}` ({benchmark_info['goal_ratio_to_median']}x Category Median)")
 
-# ------------------------------------------
 # TAB 5: RISK REGISTER
-# ------------------------------------------
 with tab_reg:
     st.subheader("🛡️ Project Risk Register & Action Plan")
     st.caption("Distinguishing empirical ML/SHAP data evidence from prescriptive management responses.")
-    
     reg_df = pd.DataFrame(risk_register)
     if not reg_df.empty:
         st.dataframe(
@@ -241,12 +240,9 @@ with tab_reg:
     else:
         st.success("No critical risk factors identified under current project parameters.")
 
-# ------------------------------------------
 # TAB 6: AI COPILOT BRIEF
-# ------------------------------------------
 with tab_copilot:
     st.subheader("🤖 ProjectIQ AI Copilot: Executive Risk Advisory")
-    
     context_payload = {
         "name": proj_name,
         "success_probability": pred_result["success_probability"] * 100.0,
@@ -259,18 +255,13 @@ with tab_copilot:
         "risk_register": risk_register,
         "scenario_summary": f"Simulated optimization suggests a potential shift to {sim_res['scenario_probability'] * 100:.1f}%."
     }
-    
     copilot_output = ai_copilot.generate_narrative_brief(context_payload)
-    st.caption(f"Generated by: **{copilot_output['source']}**")
+    st.info(f"Generated by: **{copilot_output['source']}**")
     st.markdown(copilot_output["content"])
 
-# ------------------------------------------
-# TAB 7: DECISION REPORT GENERATOR
-# ------------------------------------------
+# TAB 7: DECISION REPORT
 with tab_report:
     st.subheader("📄 Export Executive Decision Brief")
-    st.write("Generate a standardized, 2-page PDF document incorporating local SHAP attribution, risk register, and AI executive advisory.")
-    
     if st.button("Generate Official Decision Brief (PDF)", type="primary"):
         pdf_payload = {
             "name": proj_name,
@@ -283,7 +274,6 @@ with tab_report:
             "narrative": copilot_output["content"]
         }
         pdf_file = DecisionReportGenerator.generate_pdf(pdf_payload, "ProjectIQ_Decision_Brief.pdf")
-        
         with open(pdf_file, "rb") as f:
             st.download_button(
                 label="📥 Download PDF Decision Brief",
@@ -291,7 +281,7 @@ with tab_report:
                 file_name="ProjectIQ_Decision_Brief.pdf",
                 mime="application/pdf"
             )
-        st.success("Decision brief successfully compiled.")
+        st.success("Decision brief compiled.")
 
 st.markdown("---")
 st.caption("ProjectIQ V2.0 Architecture: Pre-Launch Feature Pipeline → Calibrated XGBoost ML Engine → SHAP Explainability → Decision Intelligence → PDF Generator")
