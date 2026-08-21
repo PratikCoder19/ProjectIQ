@@ -1,196 +1,297 @@
 """
-ProjectIQ v0.1 — AI-Driven Project Success & Risk Decision Support System
-Demo Target: 17 August Faculty Review
-Stack: Streamlit + Scikit-Learn / XGBoost + Prescriptive Logic
+ProjectIQ V2.0 — AI-Driven Project Success & Risk Decision Support System
+Integrated Decision Intelligence Dashboard
+Prediction Point: T₀ (Pre-Launch Lock)
 """
 
+import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import joblib
+
+# Import modular V2.0 decision intelligence engines
+from src.prediction import ProjectIQPredictor
+from src.explainability import ProjectIQExplainer
+from src.scenarios import ScenarioSimulator
+from src.benchmarking import ProjectIQBenchmarker
+from src.recommendations import RiskRegisterEngine
+from src.llm import AICopilot
+from src.reporting import DecisionReportGenerator
 
 # Page configuration
 st.set_page_config(
-    page_title="ProjectIQ | Decision Support System",
+    page_title="ProjectIQ V2.0 | Decision Support System",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Load trained pipeline and features
+# Load Engines with caching
 @st.cache_resource
-def load_assets():
-    model = joblib.load("projectiq_model.joblib")
-    features = joblib.load("model_features.joblib")
-    return model, features
+def initialize_engines():
+    pred = ProjectIQPredictor()
+    exp = ProjectIQExplainer(pred)
+    sim = ScenarioSimulator(pred)
+    bm = ProjectIQBenchmarker()
+    copilot = AICopilot()
+    return pred, exp, sim, bm, copilot
 
 try:
-    model_pipeline, feature_cols = load_assets()
+    predictor, explainer, simulator, benchmarker, ai_copilot = initialize_engines()
 except Exception as e:
-    st.error(f"Error loading model artifacts: {e}. Please ensure 'pipeline.py' was executed successfully.")
+    st.error(f"Error initializing ProjectIQ V2.0 engines: {e}")
     st.stop()
 
 # Header & Academic Context
-st.title("🚀 ProjectIQ: AI Project Risk & Decision Support System")
-st.caption("PGDM Data Science Dissertation Prototype | Prediction Point: T₀ (Pre-Launch Lock)")
+st.title("🚀 ProjectIQ V2.0: AI Decision Intelligence System")
+st.caption("PGDM Data Science Dissertation | Prediction Point: T₀ (Pre-Launch Boundary — Zero Target Leakage)")
 st.markdown("---")
 
-# Layout: 2 Columns (Input Panel vs. Analytics & Decision Output)
-col_input, col_output = st.columns([1, 1.2], gap="large")
-
-with col_input:
-    st.subheader("📋 Project Parameters (Pre-Launch)")
+# ==========================================
+# SIDEBAR: PROJECT ATTRIBUTES (INPUT PANEL)
+# ==========================================
+with st.sidebar:
+    st.header("📋 Project Configuration (T₀)")
     
-    # Financial Inputs
-    st.markdown("##### 1. Financial & Goal Parameters")
-    goal_usd = st.number_input("Target Funding Goal (USD $)", min_value=100, max_value=10000000, value=15000, step=500)
+    st.subheader("1. General & Financial")
+    proj_name = st.text_input("Project Name", value="Nova: Autonomous AI Companion")
+    proj_blurb = st.text_area(
+        "Pitch Blurb",
+        value="A next-generation companion robot powered by on-device computer vision and natural language understanding."
+    )
+    goal_usd = st.number_input("Target Goal (USD $)", min_value=100, max_value=10000000, value=25000, step=500)
     
-    # Category & Geography
-    st.markdown("##### 2. Domain & Market")
+    st.subheader("2. Domain & Market")
     category_options = [
-        "Product Design", "Tabletop Games", "Video Games", "Shorts", "Documentary",
-        "Fiction", "Fashion", "Art", "Technology", "Theater", "Music", "Publishing",
-        "Film & Video", "Food", "Comics", "Other"
+        "Technology", "Product Design", "Tabletop Games", "Video Games", "Film & Video",
+        "Music", "Publishing", "Art", "Fashion", "Food", "Crafts", "Other"
     ]
-    category = st.selectbox("Project Category", category_options)
-    
+    category = st.selectbox("Category Domain", category_options, index=0)
     country_options = ["US", "GB", "CA", "AU", "DE", "FR", "IT", "NL", "ES", "SE", "Other"]
-    country = st.selectbox("Target Country", country_options)
+    country = st.selectbox("Target Country", country_options, index=0)
     
-    # Schedule & Timing
-    st.markdown("##### 3. Timeline & Schedule")
-    campaign_duration = st.slider("Campaign Duration (Days)", min_value=7, max_value=90, value=30)
-    prep_duration = st.slider("Preparation Window (Days from Draft to Launch)", min_value=1, max_value=365, value=45)
+    st.subheader("3. Schedule & Timing")
+    campaign_duration = st.slider("Campaign Duration (Days)", min_value=7, max_value=90, value=45)
+    prep_duration = st.slider("Preparation Window (Days)", min_value=1, max_value=365, value=10)
     
-    c_time1, c_time2, c_time3 = st.columns(3)
-    with c_time1:
+    c_m1, c_m2 = st.columns(2)
+    with c_m1:
         launch_month = st.selectbox("Launch Month", [str(i) for i in range(1, 13)], index=7)
-    with c_time2:
-        launch_day = st.selectbox("Launch Day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], index=1)
-    with c_time3:
-        launch_hour = st.slider("Launch Hour (UTC)", 0, 23, 14)
-        
-    # Content & Readiness Signals
-    st.markdown("##### 4. Content Quality & Readiness Signals")
-    name_text = st.text_input("Project Title / Headline", value="SmartPulse: Next-Gen Autonomous Fitness Tracker")
-    blurb_text = st.text_area("Campaign Blurb / Summary", value="An AI-powered wearable that tracks fatigue, posture, and recovery in real-time with 7-day battery life.")
+    with c_m2:
+        launch_day = st.selectbox("Launch Day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], index=4)
+    launch_hour = st.slider("Launch Hour (UTC)", 0, 23, 14)
     
-    c_sig1, c_sig2, c_sig3 = st.columns(3)
-    with c_sig1:
-        has_video = st.checkbox("Video Pitch Included", value=True)
-    with c_sig2:
-        prelaunch_active = st.checkbox("Pre-Launch Page Active", value=True)
-    with c_sig3:
-        staff_pick = st.checkbox("Staff Pick / Featured", value=False)
+    st.subheader("4. Assets & Readiness Signals")
+    has_video = st.checkbox("Pitch Video Included", value=False)
+    prelaunch_activated = st.checkbox("Pre-Launch Page Active", value=False)
+    staff_pick = st.checkbox("Platform Staff Pick", value=False)
 
-# Compute derived inputs
-log_goal = np.log1p(goal_usd)
-name_len = len(name_text)
-name_words = len(name_text.split())
-blurb_len = len(blurb_text)
-blurb_words = len(blurb_text.split())
-
-input_data = pd.DataFrame([{
-    "log_goal_usd": log_goal,
+# Build baseline input dictionary
+baseline_input = {
+    "name": proj_name,
+    "blurb": proj_blurb,
+    "goal_usd": goal_usd,
     "campaign_duration_days": campaign_duration,
     "prep_duration_days": prep_duration,
     "launch_hour": launch_hour,
-    "name_len": name_len,
-    "name_word_count": name_words,
-    "blurb_len": blurb_len,
-    "blurb_word_count": blurb_words,
     "has_video": int(has_video),
     "staff_pick": int(staff_pick),
-    "prelaunch_activated": int(prelaunch_active),
+    "prelaunch_activated": int(prelaunch_activated),
     "category_clean": category,
     "country_clean": country,
     "launch_month": launch_month,
     "launch_day_of_week": launch_day
-}])
+}
 
-# Inference
-with col_output:
-    st.subheader("🎯 Decision Support & Risk Analysis")
+# Run core inference & SHAP
+pred_result = predictor.predict(baseline_input)
+shap_result = explainer.explain_instance(pred_result["input_df"])
+benchmark_info = benchmarker.get_benchmark(category, goal_usd, campaign_duration)
+risk_register = RiskRegisterEngine.generate_risk_register(baseline_input, shap_result["top_drivers"], benchmark_info)
+
+# ==========================================
+# MAIN DASHBOARD TABS
+# ==========================================
+tab_assess, tab_shap, tab_sim, tab_bench, tab_reg, tab_copilot, tab_report = st.tabs([
+    "🎯 1. Project Assessment",
+    "🔍 2. SHAP Explainability",
+    "⚡ 3. What-If Simulator",
+    "📊 4. Benchmarking",
+    "🛡️ 5. Risk Register",
+    "🤖 6. AI Copilot Brief",
+    "📄 7. Decision Report"
+])
+
+# ------------------------------------------
+# TAB 1: PROJECT ASSESSMENT
+# ------------------------------------------
+with tab_assess:
+    st.subheader("Project Outcome Probability & Calibrated Risk Tier")
     
-    # Model probabilities
-    prob_success = model_pipeline.predict_proba(input_data)[0, 1]
-    risk_score = (1.0 - prob_success) * 100
-    
-    # KPI Metric Cards
-    m1, m2, m3 = st.columns(3)
-    with m1:
+    col_kpi1, col_kpi2, col_kpi3 = st.columns(3)
+    with col_kpi1:
         st.metric(
-            label="Predicted Success Probability",
-            value=f"{prob_success * 100:.1f}%",
-            delta=f"{(prob_success - 0.6322) * 100:+.1f}% vs Baseline"
+            label="Estimated Success Probability",
+            value=f"{pred_result['success_probability'] * 100:.1f}%",
+            delta=f"{(pred_result['success_probability'] - 0.6322) * 100:+.1f}% vs Platform Avg"
         )
-    with m2:
-        risk_label = "LOW" if risk_score < 30 else ("MEDIUM" if risk_score < 60 else "HIGH")
-        st.metric(label="Overall Project Risk Tier", value=risk_label)
-    with m3:
-        st.metric(label="Calibrated Risk Score", value=f"{risk_score:.1f} / 100")
+    with col_kpi2:
+        tier = pred_result["risk_tier"]
+        color = "🟢" if tier == "LOW" else ("🟡" if tier == "MEDIUM" else "🔴")
+        st.metric(label="Overall Risk Tier", value=f"{color} {tier} RISK")
+    with col_kpi3:
+        st.metric(label="Calibrated Risk Score", value=f"{pred_result['risk_score']:.1f} / 100")
         
-    st.progress(float(prob_success))
-    st.markdown("---")
-    
-    # Explainable Risk Factor Assessment
-    st.subheader("🔍 Major Risk & Success Drivers")
-    
-    driver_factors = []
-    
-    # Goal-based rules
-    if goal_usd > 50000:
-        driver_factors.append(("⚠️ High Funding Goal ($>50k)", "Capital requirement is significantly above platform median, increasing failure risk.", "negative"))
-    elif goal_usd <= 10000:
-        driver_factors.append(("✅ Optimal Funding Goal", "Goal size aligns with historical high-conversion campaigns.", "positive"))
-        
-    # Duration rules
-    if campaign_duration > 35:
-        driver_factors.append(("⚠️ Extended Campaign Duration (>35 Days)", "Longer campaigns experience momentum decay and donor fatigue.", "negative"))
-    elif 25 <= campaign_duration <= 35:
-        driver_factors.append(("✅ Optimal Duration Window", "30-day target maximizes urgency while allowing organic reach.", "positive"))
-        
-    # Video & Content rules
-    if not has_video:
-        driver_factors.append(("❌ Missing Video Asset", "Projects without pitch videos historically suffer severe conversion drops.", "negative"))
-    else:
-        driver_factors.append(("✅ Video Pitch Present", "Strong visual asset increases creator credibility.", "positive"))
-        
-    if not prelaunch_active:
-        driver_factors.append(("⚠️ No Pre-Launch Page", "Lack of pre-launch lead generation reduces day-1 funding velocity.", "negative"))
-    else:
-        driver_factors.append(("✅ Pre-Launch Validation", "Active pre-launch page builds Day-1 donor momentum.", "positive"))
-        
-    if prep_duration < 14:
-        driver_factors.append(("⚠️ Short Preparation Window (<14 Days)", "Fast turnarounds correlate with incomplete marketing assets.", "negative"))
+    st.progress(float(pred_result["success_probability"]))
+    st.info("💡 **Academic Note:** Probabilities are calibrated on unseen holdout data ($N=34,049$, Brier Score: $0.1411$). Predictions represent statistical associations at $T_0$ and do not imply causal certainty.")
 
-    for title, desc, sentiment in driver_factors:
-        if sentiment == "positive":
-            st.success(f"**{title}**: {desc}")
-        else:
-            st.warning(f"**{title}**: {desc}")
-            
-    st.markdown("---")
+# ------------------------------------------
+# TAB 2: SHAP EXPLAINABILITY
+# ------------------------------------------
+with tab_shap:
+    st.subheader("Instance-Level Factor Attribution (Local TreeSHAP)")
+    waterfall_path = "instance_shap_waterfall.png"
+    explainer.generate_waterfall_plot(shap_result["shap_explanation"], waterfall_path)
     
-    # Actionable Managerial Recommendations
-    st.subheader("💡 Prescriptive Management Recommendations")
+    col_plot, col_list = st.columns([1.4, 1])
+    with col_plot:
+        if os.path.exists(waterfall_path):
+            st.image(waterfall_path, caption="SHAP Waterfall: How project features shift the base log-odds to the final prediction.")
+    with col_list:
+        st.markdown("##### Top Attribution Drivers")
+        for d in shap_result["top_drivers"][:6]:
+            icon = "✅" if d["shap_value"] > 0 else "⚠️"
+            st.write(f"{icon} **{d['feature']}**: `{d['shap_value']:+.3f}` ({d['direction']})")
+
+# ------------------------------------------
+# TAB 3: WHAT-IF SIMULATOR
+# ------------------------------------------
+with tab_sim:
+    st.subheader("⚡ Model-Based What-If Scenario Simulator")
+    st.caption("Simulate how altering controllable decisions shifts model probability. (Non-causal sensitivity analysis)")
     
-    recs = []
-    if goal_usd > 30000:
-        recs.append("• **De-risk Funding Target:** Consider staging the release into Phase 1 (MVP) with a lower initial target ($15,000–$20,000) and stretch goals.")
-    if campaign_duration > 35:
-        recs.append(f"• **Shorten Schedule:** Reduce duration from {campaign_duration} days to 30 days to sustain backer urgency and algorithm visibility.")
-    if not has_video:
-        recs.append("• **Produce High-Definition Pitch Video:** Essential to improve conversion rates and qualify for staff curation.")
-    if not prelaunch_active:
-        recs.append("• **Activate Pre-Launch Waitlist:** Run a 30-day pre-launch landing page to guarantee at least 20% of goal funded within the first 48 hours.")
-    if blurb_words < 12 or blurb_words > 25:
-        recs.append(f"• **Optimize Copy Length:** Current blurb is {blurb_words} words. Target the platform sweet spot of 15–22 descriptive words.")
+    c_s1, c_s2, c_s3 = st.columns(3)
+    with c_s1:
+        sim_goal = st.number_input("Simulated Goal ($)", min_value=100, max_value=1000000, value=int(min(goal_usd, 12000)), step=500)
+    with c_s2:
+        sim_dur = st.slider("Simulated Duration (Days)", 7, 90, value=int(min(campaign_duration, 30)))
+    with c_s3:
+        sim_prep = st.slider("Simulated Prep (Days)", 1, 365, value=int(max(prep_duration, 35)))
         
-    if not recs:
-        recs.append("• **All parameters optimized:** Project configuration aligns with top-quartile historical performers. Proceed with promotional execution.")
+    c_s4, c_s5 = st.columns(2)
+    with c_s4:
+        sim_video = st.checkbox("Simulate With Pitch Video", value=True)
+    with c_s5:
+        sim_prelaunch = st.checkbox("Simulate With Pre-Launch Page", value=True)
         
-    for r in recs:
-        st.write(r)
+    mod_params = {
+        "goal_usd": sim_goal,
+        "campaign_duration_days": sim_dur,
+        "prep_duration_days": sim_prep,
+        "has_video": int(sim_video),
+        "prelaunch_activated": int(sim_prelaunch)
+    }
+    
+    sim_res = simulator.simulate_scenario(baseline_input, mod_params)
+    
+    col_r1, col_r2, col_r3 = st.columns(3)
+    with col_r1:
+        st.metric("Baseline Success Prob", f"{sim_res['baseline_probability'] * 100:.1f}%")
+    with col_r2:
+        st.metric("Scenario Success Prob", f"{sim_res['scenario_probability'] * 100:.1f}%")
+    with col_r3:
+        st.metric(
+            "Projected Probability Shift",
+            f"{sim_res['probability_delta_pct']:+.1f}%",
+            delta=f"{sim_res['probability_delta_pct']:+.1f}%"
+        )
+
+# ------------------------------------------
+# TAB 4: BENCHMARKING
+# ------------------------------------------
+with tab_bench:
+    st.subheader(f"📊 Domain Benchmarks: {category}")
+    
+    b1, b2, b3, b4 = st.columns(4)
+    with b1:
+        st.metric("Category Success Rate", f"{benchmark_info['domain_success_rate']:.1f}%")
+    with b2:
+        st.metric("Domain Median Goal", f"${benchmark_info['domain_median_goal']:,}")
+    with b3:
+        st.metric("Domain Median Duration", f"{benchmark_info['domain_median_duration']} Days")
+    with b4:
+        st.metric("Video Adoption Rate", f"{benchmark_info['domain_video_adoption']:.0f}%")
+        
+    st.write(f"**Goal Calibration Assessment:** `{benchmark_info['goal_assessment']}` ({benchmark_info['goal_ratio_to_median']}x Category Median)")
+
+# ------------------------------------------
+# TAB 5: RISK REGISTER
+# ------------------------------------------
+with tab_reg:
+    st.subheader("🛡️ Project Risk Register & Action Plan")
+    st.caption("Distinguishing empirical ML/SHAP data evidence from prescriptive management responses.")
+    
+    reg_df = pd.DataFrame(risk_register)
+    if not reg_df.empty:
+        st.dataframe(
+            reg_df[["risk_id", "category", "risk_title", "likelihood", "potential_impact", "evidence_detail", "suggested_response"]],
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.success("No critical risk factors identified under current project parameters.")
+
+# ------------------------------------------
+# TAB 6: AI COPILOT BRIEF
+# ------------------------------------------
+with tab_copilot:
+    st.subheader("🤖 ProjectIQ AI Copilot: Executive Risk Advisory")
+    
+    context_payload = {
+        "name": proj_name,
+        "success_probability": pred_result["success_probability"] * 100.0,
+        "risk_tier": pred_result["risk_tier"],
+        "goal_usd": goal_usd,
+        "benchmark_median_goal": benchmark_info["domain_median_goal"],
+        "duration_days": campaign_duration,
+        "prep_days": prep_duration,
+        "top_risk_drivers": shap_result["top_drivers"],
+        "risk_register": risk_register,
+        "scenario_summary": f"Simulated optimization suggests a potential shift to {sim_res['scenario_probability'] * 100:.1f}%."
+    }
+    
+    copilot_output = ai_copilot.generate_narrative_brief(context_payload)
+    st.caption(f"Generated by: **{copilot_output['source']}**")
+    st.markdown(copilot_output["content"])
+
+# ------------------------------------------
+# TAB 7: DECISION REPORT GENERATOR
+# ------------------------------------------
+with tab_report:
+    st.subheader("📄 Export Executive Decision Brief")
+    st.write("Generate a standardized, 2-page PDF document incorporating local SHAP attribution, risk register, and AI executive advisory.")
+    
+    if st.button("Generate Official Decision Brief (PDF)", type="primary"):
+        pdf_payload = {
+            "name": proj_name,
+            "category": category,
+            "goal_usd": goal_usd,
+            "duration_days": campaign_duration,
+            "success_probability": pred_result["success_probability"] * 100.0,
+            "risk_tier": pred_result["risk_tier"],
+            "risk_register": risk_register,
+            "narrative": copilot_output["content"]
+        }
+        pdf_file = DecisionReportGenerator.generate_pdf(pdf_payload, "ProjectIQ_Decision_Brief.pdf")
+        
+        with open(pdf_file, "rb") as f:
+            st.download_button(
+                label="📥 Download PDF Decision Brief",
+                data=f,
+                file_name="ProjectIQ_Decision_Brief.pdf",
+                mime="application/pdf"
+            )
+        st.success("Decision brief successfully compiled.")
 
 st.markdown("---")
-st.caption("ProjectIQ Architecture: Data Pipeline → Pre-Launch Feature Store → XGBoost ML Engine (AUC: 0.8646) → Prescriptive Decision Layer")
+st.caption("ProjectIQ V2.0 Architecture: Pre-Launch Feature Pipeline → Calibrated XGBoost ML Engine → SHAP Explainability → Decision Intelligence → PDF Generator")
